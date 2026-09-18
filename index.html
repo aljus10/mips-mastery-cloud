@@ -579,9 +579,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
       const res=await fetch('/api/config',{cache:'no-store'});
       if(!res.ok)throw new Error('Cloud configuration endpoint is unavailable.');
       const cfg=await res.json();
-      if(!cfg.supabaseUrl||!cfg.supabaseAnonKey)throw new Error('Supabase environment variables are missing on Vercel.');
+      let suUrl=String(cfg.supabaseUrl||'').trim().replace(/^["']|["']$/g,'');
+      try{if(suUrl){const u=new URL(suUrl.startsWith('http')?suUrl:'https://'+suUrl);suUrl=u.origin;}}catch(_){}
+      const suKey=String(cfg.supabaseAnonKey||'').trim().replace(/^["']|["']$/g,'');
+      if(!suUrl||!suKey)throw new Error('Supabase environment variables are missing on Vercel.');
       if(!window.supabase||!window.supabase.createClient)throw new Error('Supabase library did not load.');
-      cloudClient=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      cloudClient=window.supabase.createClient(suUrl,suKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
       const {data:{session}}=await cloudClient.auth.getSession();
       if(session&&session.user){
         cloudUser=session.user;cloudReady=true;showApp(cloudUser);await initialCloudMerge();
