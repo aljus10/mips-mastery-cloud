@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIPS Mastery Lab</title>
+<meta name="description" content="MIPS Mastery Lab — interactive assembly decoding, register mapping, 32-bit binary drills, and cloud sync.">
+<meta name="theme-color" content="#07111f">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23ffbd59'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='central' text-anchor='middle' font-family='monospace' font-weight='900' font-size='60' fill='%23191106'%3EM%3C/text%3E%3C/svg%3E">
+
+<style>
+:root{
+  --bg:#07111f;
+  --bg2:#0b1628;
+  --surface:rgba(14,28,48,.82);
+  --surface-solid:#0f1d31;
+  --surface2:#152742;
+  --line:#273d5d;
+  --line-soft:rgba(125,164,211,.18);
+  --text:#f3f7ff;
+  --muted:#9fb0c8;
+  --amber:#ffbd59;
+  --amber2:#ffdb8a;
+  --teal:#58d0b4;
+  --blue:#76a8ff;
+  --violet:#a98bff;
+  --red:#ff8273;
+  --green:#64d9a7;
+  --ink:#07111f;
+  --radius:20px;
+  --shadow:0 18px 55px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.5;
+  background:
+    radial-gradient(circle at 15% 10%,rgba(118,168,255,.14),transparent 26%),
+    radial-gradient(circle at 86% 16%,rgba(169,139,255,.11),transparent 28%),
+    linear-gradient(180deg,#07111f 0%,#091524 55%,#07111f 100%);
+  min-height:100vh;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.16;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:34px 34px;
+  mask-image:linear-gradient(to bottom,black,transparent 82%);
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+code,.mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(255,189,89,.28);outline-offset:2px}
+.shell{max-width:1240px;margin:auto;padding:0 22px 70px}
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  margin:0 -22px;
+  padding:14px 22px 11px;
+  backdrop-filter:blur(18px);
+  background:linear-gradient(180deg,rgba(7,17,31,.92),rgba(7,17,31,.72));
+  border-bottom:1px solid rgba(125,164,211,.12);
+}
+.header-row{display:flex;align-items:center;justify-content:space-between;gap:18px;max-width:1240px;margin:auto}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{
+  width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
+  color:#191106;font-weight:950;font-family:monospace;font-size:22px;
+  background:linear-gradient(145deg,var(--amber2),var(--amber));
+  box-shadow:0 8px 24px rgba(255,189,89,.16);
+  transform:rotate(-2deg);
+}
+.brand-title{font-weight:900;letter-spacing:-.03em;font-size:19px;white-space:nowrap}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap}
+.save-pill{display:flex;align-items:center;gap:7px;font-size:12px;color:#bff8e7;background:rgba(33,95,81,.22);border:1px solid rgba(88,208,180,.28);border-radius:999px;padding:7px 10px;white-space:nowrap}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px rgba(88,208,180,.12)}
+.main-nav{max-width:1240px;margin:11px auto 0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.main-nav::-webkit-scrollbar{display:none}
+.nav-btn{border:0;background:transparent;color:var(--muted);padding:9px 12px;border-radius:10px;font-weight:750;white-space:nowrap;transition:.18s ease}
+.nav-btn:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-btn.active{color:#171006;background:linear-gradient(135deg,var(--amber2),var(--amber));box-shadow:0 8px 20px rgba(255,189,89,.13)}
+.page{display:none;animation:pageIn .32s ease both}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);gap:22px;align-items:stretch;padding-top:34px}
+.hero-copy{padding:34px 0 18px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);font-weight:900}
+.hero h1{font-size:clamp(38px,6vw,68px);line-height:.98;letter-spacing:-.055em;margin:10px 0 17px;max-width:840px}
+.hero h1 .grad{background:linear-gradient(100deg,#fff 5%,#ffd88a 40%,#75dfc7 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-copy p{max-width:780px;color:var(--muted);font-size:17px;margin:0}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:850;transition:transform .18s ease,box-shadow .18s ease,background .18s ease;color:#171006;background:linear-gradient(135deg,var(--amber2),var(--amber))}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,189,89,.14)}
+.btn.secondary{color:var(--text);background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.btn.secondary:hover{background:rgba(255,255,255,.065);box-shadow:none}
+.btn.good{background:linear-gradient(135deg,#82e7c9,var(--teal));color:#05130f}
+.btn.danger{background:rgba(255,130,115,.08);color:#ffc3ba;border:1px solid rgba(255,130,115,.3)}
+.btn.small{padding:8px 11px;border-radius:10px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.hero-visual{
+  position:relative;overflow:hidden;border:1px solid var(--line-soft);border-radius:26px;
+  background:linear-gradient(145deg,rgba(19,39,67,.96),rgba(9,24,43,.92));
+  box-shadow:var(--shadow);padding:22px;min-height:360px;
+}
+.hero-visual:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-70px;top:-70px;background:radial-gradient(circle,rgba(118,168,255,.25),transparent 68%);animation:floatBlob 6s ease-in-out infinite}
+.hero-visual:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;left:-70px;bottom:-70px;background:radial-gradient(circle,rgba(88,208,180,.18),transparent 68%);animation:floatBlob 8s ease-in-out infinite reverse}
+@keyframes floatBlob{50%{transform:translate(12px,18px) scale(1.08)}}
+.visual-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;position:relative;z-index:2}
+.cpu-card{position:relative;z-index:2;margin-top:25px;border:1px solid rgba(118,168,255,.24);border-radius:18px;background:rgba(4,14,27,.7);padding:18px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.018)}
+.cpu-title{display:flex;align-items:center;gap:9px;font-weight:850}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 0 rgba(88,208,180,.5);animation:pulse 1.8s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(88,208,180,0)}}
+.decode-line{margin-top:14px;font-family:monospace;color:#dce8fb;font-size:13px;white-space:nowrap;overflow:hidden;border-right:2px solid var(--amber);width:100%;animation:cursor 1s step-end infinite}
+@keyframes cursor{50%{border-color:transparent}}
+.field-strip{display:grid;grid-template-columns:6fr 5fr 5fr 5fr 5fr 6fr;gap:4px;margin-top:16px}
+.hero-field{padding:11px 5px;border-radius:8px;background:#142b49;border:1px solid rgba(118,168,255,.16);text-align:center;font-family:monospace;font-size:11px;animation:fieldGlow 5s infinite}
+.hero-field:nth-child(2){animation-delay:.35s}.hero-field:nth-child(3){animation-delay:.7s}.hero-field:nth-child(4){animation-delay:1.05s}.hero-field:nth-child(5){animation-delay:1.4s}.hero-field:nth-child(6){animation-delay:1.75s}
+@keyframes fieldGlow{0%,18%,100%{background:#142b49;transform:translateY(0)}9%{background:#604d23;color:#fff4d4;transform:translateY(-2px)}}
+.binary-rain{position:absolute;inset:0;pointer-events:none;opacity:.18;font-family:monospace;color:#8fc2ff;overflow:hidden}
+.binary-rain span{position:absolute;top:-40px;animation:fall linear infinite;letter-spacing:.12em}
+.binary-rain span:nth-child(1){left:6%;animation-duration:8s}.binary-rain span:nth-child(2){left:37%;animation-duration:10s;animation-delay:-5s}.binary-rain span:nth-child(3){left:72%;animation-duration:9s;animation-delay:-2s}.binary-rain span:nth-child(4){left:88%;animation-duration:12s;animation-delay:-7s}
+@keyframes fall{to{transform:translateY(430px)}}
+.section{margin-top:24px}
+.section-head{display:flex;justify-content:space-between;gap:16px;align-items:end;margin-bottom:13px}
+.section-head h2{margin:2px 0 0;font-size:clamp(24px,3vw,34px);letter-spacing:-.035em}
+.section-head p{margin:0;color:var(--muted);max-width:650px}
+.grid{display:grid;gap:15px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--radius);padding:18px;box-shadow:0 10px 34px rgba(0,0,0,.12);backdrop-filter:blur(10px)}
+.card h2,.card h3,.card h4{margin:0}.card p{color:var(--muted);margin:7px 0}
+.metric{display:flex;align-items:center;gap:14px;min-height:116px;position:relative;overflow:hidden}
+.metric:after{content:"";position:absolute;width:80px;height:80px;border-radius:50%;right:-24px;top:-28px;background:rgba(118,168,255,.06)}
+.metric-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#152d4c;border:1px solid rgba(118,168,255,.16);font-size:20px;flex:0 0 auto}
+.metric-num{font-size:27px;line-height:1;font-weight:950;letter-spacing:-.035em}.metric-label{font-size:12px;color:var(--muted);margin-top:6px}
+.level-card{display:grid;grid-template-columns:auto 1fr;gap:15px;align-items:center}
+.level-ring{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--amber) var(--p,0%),rgba(255,255,255,.07) 0);position:relative}
+.level-ring:after{content:"";position:absolute;inset:8px;border-radius:50%;background:#0f1d31}
+.level-ring strong{position:relative;z-index:1;font-size:23px}.level-ring small{position:relative;z-index:1;display:block;color:var(--muted);font-size:9px;text-align:center}
+.progress-track{height:9px;border-radius:999px;background:#071322;border:1px solid rgba(125,164,211,.16);overflow:hidden}
+.progress-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--teal),var(--amber));width:0;transition:width .45s cubic-bezier(.2,.75,.25,1)}
+.mission{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.mission b{display:block}.mission small{color:var(--muted)}
+.mastery-list{display:grid;gap:10px}
+.mastery-row{display:grid;grid-template-columns:170px 1fr 74px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(125,164,211,.1)}
+.mastery-row:last-child{border-bottom:0}.mastery-row b{font-size:13px}.mastery-row small{text-align:right;color:var(--muted)}
+.mastery-bar{height:8px;background:#071322;border-radius:999px;overflow:hidden}.mastery-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:999px;transition:width .45s ease}
+.callout{padding:13px 14px;border-radius:14px;background:rgba(255,189,89,.07);border:1px solid rgba(255,189,89,.16);color:#ffecbd}
+.callout.good{background:rgba(88,208,180,.07);border-color:rgba(88,208,180,.18);color:#caf9ec}
+.callout.red{background:rgba(255,130,115,.07);border-color:rgba(255,130,115,.18);color:#ffd1cb}
+.format-card{position:relative;overflow:hidden}
+.format-card .badge{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:11px;font-weight:950;background:#173457;color:#d7e8ff;margin-bottom:12px}
+.format-card .format-line{display:grid;gap:4px;margin-top:15px;overflow-x:auto;padding-bottom:3px}
+.format-card.r .format-line{grid-template-columns:6fr 5fr 5fr 5fr 5fr 6fr;min-width:570px}.format-card.i .format-line{grid-template-columns:6fr 5fr 5fr 16fr;min-width:510px}.format-card.j .format-line{grid-template-columns:6fr 26fr;min-width:420px}
+.format-cell{padding:11px 7px;border-radius:8px;background:#142a47;border:1px solid rgba(118,168,255,.15);text-align:center;transition:.2s ease;font-family:monospace}.format-cell span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.format-cell.lit{background:#604b20;border-color:#a47a2c;transform:translateY(-3px);box-shadow:0 7px 22px rgba(255,189,89,.12)}
+.workflow{display:grid;gap:10px;margin-top:12px}.workflow-step{display:grid;grid-template-columns:32px 1fr;gap:11px;padding:12px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid var(--line-soft)}.step-n{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:rgba(255,189,89,.14);color:var(--amber2);font-weight:900}.workflow-step small{color:var(--muted)}
+.practice-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px}
+.practice-main{min-width:0}.practice-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.select{min-width:250px;background:#0a1728;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.problem-card{margin-top:15px;background:linear-gradient(145deg,rgba(11,27,47,.96),rgba(12,22,38,.96));border:1px solid rgba(118,168,255,.2);border-radius:22px;padding:22px;position:relative;overflow:hidden;min-height:310px}
+.problem-card.correct{animation:correctPop .38s ease}.problem-card.wrong{animation:shake .34s ease}
+@keyframes correctPop{50%{transform:scale(1.01);border-color:rgba(88,208,180,.75);box-shadow:0 0 0 4px rgba(88,208,180,.08)}}
+@keyframes shake{20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.problem-type{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px}.difficulty{padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:#c7d7ec}.prompt{font-size:clamp(20px,2.6vw,28px);line-height:1.25;font-weight:900;letter-spacing:-.025em;margin:18px 0 20px}.text-input,.bit-input{width:100%;background:#071522;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:12px;transition:.18s ease}.text-input:focus,.bit-input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,189,89,.08);outline:none}.text-input{resize:vertical;min-height:52px}.bit-input{text-align:center;font-family:monospace;letter-spacing:.07em}.answer-grid{display:grid;gap:8px}.answer-grid.r{grid-template-columns:6fr 5fr 5fr 5fr 5fr 6fr}.answer-grid.i{grid-template-columns:6fr 5fr 5fr 16fr}.answer-grid.j{grid-template-columns:6fr 26fr}.field-label{text-align:center;font-size:10px;color:var(--muted);margin-bottom:5px;min-height:15px}.feedback{display:none;margin-top:15px;padding:14px;border-radius:14px}.feedback.show{display:block;animation:feedbackIn .25s ease both}.feedback.ok{background:rgba(88,208,180,.08);border:1px solid rgba(88,208,180,.28);color:#d4fff3}.feedback.no{background:rgba(255,130,115,.08);border:1px solid rgba(255,130,115,.28);color:#ffe0dc}@keyframes feedbackIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.solution{margin-top:10px;padding:11px 12px;border-radius:10px;background:#06111f;border:1px dashed rgba(118,168,255,.35);font-family:monospace;color:#e6effd;overflow:auto}.hint-box{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(118,168,255,.07);border:1px solid rgba(118,168,255,.18);color:#d9e8ff}.hint-box.show{display:block;animation:feedbackIn .2s ease}
+.side-stack{display:grid;gap:12px;align-content:start}.mini-stat{padding:15px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft)}.mini-stat .big{font-size:26px;font-weight:950}.mini-stat small{color:var(--muted)}
+.combo{display:flex;align-items:center;justify-content:space-between;gap:12px}.combo-badge{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(255,189,89,.12);border:1px solid rgba(255,189,89,.2);font-size:21px}
+.table-wrap{overflow:auto;border:1px solid var(--line-soft);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:650px}th,td{padding:11px 12px;border-bottom:1px solid rgba(125,164,211,.12);text-align:left}th{background:#152842;color:#dbe8f9;font-size:12px;position:sticky;top:0;z-index:1}td{background:rgba(10,25,44,.7);color:#dbe8f7;font-size:13px}tr:last-child td{border-bottom:0}.code{font-family:monospace;color:#ffd789}.chip{display:inline-block;padding:3px 7px;border-radius:999px;font-size:10px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}.chip.class{border-color:rgba(88,208,180,.26);color:#bdf2e5;background:rgba(88,208,180,.07)}
+.code-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}.filter-btn{border:1px solid var(--line);background:#0d1b2e;color:var(--muted);border-radius:10px;padding:8px 11px;font-weight:800}.filter-btn.active{background:#1c385d;color:#eef5ff;border-color:#355f91}
+.converter-card{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px}.converter-form{display:flex;gap:9px}.bit-panels{display:grid;gap:10px}.bit-panel{padding:13px;border-radius:14px;background:#091827;border:1px solid var(--line-soft)}.bit-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.bit-panel small{color:var(--muted)}.bit-tiles{display:flex;flex-wrap:wrap;gap:4px;margin-top:9px}.bit-tile{width:27px;height:31px;border-radius:7px;display:grid;place-items:center;background:#142a47;border:1px solid rgba(118,168,255,.16);font-family:monospace;font-size:12px;animation:tileIn .25s ease both}@keyframes tileIn{from{opacity:0;transform:translateY(4px) scale(.95)}to{opacity:1;transform:none}}
+.achievements{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.achievement{padding:13px;border-radius:15px;background:#0b1a2c;border:1px solid var(--line-soft);display:flex;gap:10px;align-items:center;opacity:.48;filter:saturate(.4)}.achievement.unlocked{opacity:1;filter:none;border-color:rgba(255,189,89,.22);background:rgba(255,189,89,.045)}.achievement-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#152d4c;font-size:19px}.achievement b{display:block;font-size:13px}.achievement small{color:var(--muted);font-size:11px}
+.file-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.file-btn{position:relative;overflow:hidden}.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;z-index:100;background:#10233d;border:1px solid #335376;border-radius:12px;padding:10px 13px;color:#edf5ff;box-shadow:var(--shadow);pointer-events:none;transition:.25s ease;font-size:13px}.toast.show{opacity:1;transform:translate(-50%,0)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}.confetti i{position:absolute;top:-18px;width:9px;height:15px;border-radius:2px;animation:confettiFall 1.15s cubic-bezier(.15,.7,.25,1) forwards}@keyframes confettiFall{to{transform:translate(var(--dx),105vh) rotate(720deg);opacity:.15}}
+.footer{margin-top:44px;padding-top:20px;border-top:1px solid rgba(125,164,211,.1);display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px}
+.hide{display:none!important}
+@media(max-width:980px){.hero{grid-template-columns:1fr}.hero-visual{min-height:300px}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.practice-layout{grid-template-columns:1fr}.side-stack{grid-template-columns:repeat(3,minmax(0,1fr))}.converter-card{grid-template-columns:1fr}}
+@media(max-width:720px){.shell{padding:0 13px 50px}.site-header{margin:0 -13px;padding-left:13px;padding-right:13px}.brand-sub,.save-pill{display:none}.hero{padding-top:18px}.hero-copy{padding-top:20px}.hero h1{font-size:42px}.g2,.g3,.g4{grid-template-columns:1fr}.side-stack{grid-template-columns:1fr}.answer-grid.r,.answer-grid.i,.answer-grid.j{grid-template-columns:1fr 1fr}.mastery-row{grid-template-columns:110px 1fr 64px}.achievements{grid-template-columns:1fr}.converter-form{flex-direction:column}.field-strip{grid-template-columns:repeat(3,1fr)}.hero-field{font-size:10px}.footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
+
+/* Cloud login + sync shell */
+.cloud-locked{display:none!important}
+.auth-gate{
+  min-height:100vh;display:grid;place-items:center;padding:26px;
+  background:
+    radial-gradient(circle at 18% 14%,rgba(118,168,255,.16),transparent 28%),
+    radial-gradient(circle at 84% 20%,rgba(169,139,255,.13),transparent 30%),
+    linear-gradient(180deg,#07111f 0%,#091524 60%,#07111f 100%);
+}
+.auth-card{width:min(100%,430px);background:rgba(14,28,48,.92);border:1px solid var(--line-soft);border-radius:24px;padding:24px;box-shadow:var(--shadow);backdrop-filter:blur(16px)}
+.auth-mark{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;color:#181006;background:linear-gradient(145deg,var(--amber2),var(--amber));font-weight:950;font-family:monospace;font-size:26px;box-shadow:0 10px 28px rgba(255,189,89,.16);margin-bottom:17px}
+.auth-card h1{margin:0;font-size:30px;letter-spacing:-.045em}.auth-card>p{color:var(--muted);margin:8px 0 19px}
+.auth-form{display:grid;gap:12px}.auth-label{display:grid;gap:6px;font-size:12px;color:#c7d4e6;font-weight:800}.auth-input{width:100%;border:1px solid var(--line);background:#091827;color:var(--text);border-radius:12px;padding:12px 13px;min-height:46px}.auth-input:focus{border-color:#4d79ac}
+.auth-error{display:none;margin-top:12px;padding:10px 12px;border-radius:11px;background:rgba(255,130,115,.08);border:1px solid rgba(255,130,115,.28);color:#ffd3cd;font-size:12px}.auth-error.show{display:block}
+.auth-note{margin-top:15px;padding-top:13px;border-top:1px solid rgba(125,164,211,.13);color:var(--muted);font-size:11px}
+.header-actions{display:flex;align-items:center;gap:8px}.profile-pill{display:none;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;border:1px solid rgba(118,168,255,.2);background:rgba(118,168,255,.06);color:#dbe9ff;font-size:12px;max-width:240px}.profile-pill.show{display:flex}.profile-pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cloud-syncing .save-dot{background:var(--amber);box-shadow:0 0 0 4px rgba(255,189,89,.11)}.cloud-error .save-dot{background:var(--red);box-shadow:0 0 0 4px rgba(255,130,115,.11)}
+@media(max-width:720px){.profile-pill{display:none!important}.header-actions .btn.small{padding:7px 9px}.auth-gate{padding:15px}.auth-card{padding:20px}.auth-card h1{font-size:27px}}
+
+</style>
+</head>
+<body>
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <div class="auth-mark">M</div>
+    <div class="eyebrow">Private training space</div>
+    <h1>Sign in to MIPS Mastery Lab</h1>
+    <p>Your progress syncs through the cloud, so the same streaks, XP and mastery follow you from laptop to phone.</p>
+    <form class="auth-form" id="loginForm">
+      <label class="auth-label">Email<input class="auth-input" id="loginEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+      <label class="auth-label">Password<input class="auth-input" id="loginPassword" type="password" autocomplete="current-password" required placeholder="Your password"></label>
+      <button class="btn" id="loginBtn" type="submit">Sign in</button>
+    </form>
+    <div class="auth-error" id="authError" role="alert"></div>
+    <div class="auth-note">No public sign-up is included. Create only your own account in Supabase, then use that login here.</div>
+  </div>
+</div>
+<div class="shell cloud-locked" id="app">
+  <header class="site-header">
+    <div class="header-row">
+      <div class="brand">
+        <div class="logo">M</div>
+        <div><div class="brand-title">MIPS Mastery Lab</div><div class="brand-sub">Decode it. Map it. Encode it.</div></div>
+      </div>
+      <div class="header-actions">
+        <div class="save-pill" id="savePill"><span class="save-dot"></span><span id="saveText">Waiting for cloud</span></div>
+        <div class="profile-pill" id="profilePill"><span id="profileEmail"></span></div>
+        <button class="btn secondary small hide" id="signOutBtn" type="button">Sign out</button>
+      </div>
+    </div>
+    <nav class="main-nav" aria-label="Main navigation">
+      <button class="nav-btn active" data-page="home">Home</button>
+      <button class="nav-btn" data-page="learn">Learn</button>
+      <button class="nav-btn" data-page="practice">Practice</button>
+      <button class="nav-btn" data-page="codes">Code tables</button>
+      <button class="nav-btn" data-page="convert">Converter</button>
+      <button class="nav-btn" data-page="progress">Progress</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page active" id="home">
+      <div class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">Computer Architecture · MIPS</div>
+          <h1>Turn confusing bit fields into <span class="grad">muscle memory.</span></h1>
+          <p>Master the exact pattern your class keeps testing: read the intention, choose R/I/J, place the registers correctly, convert values to the right bit width, and produce a clean 32-bit instruction.</p>
+          <div class="action-row">
+            <button class="btn" data-jump="practice">Start a mastery round</button>
+            <button class="btn secondary" data-jump="learn">Review the patterns</button>
+          </div>
+        </div>
+        <div class="hero-visual" aria-label="Animated R-type decoding example">
+          <div class="binary-rain" aria-hidden="true"><span>0010000100101000</span><span>0000001110000010</span><span>1000110101001001</span><span>0000100000000000</span></div>
+          <div class="visual-top"><span>LIVE DECODER</span><span class="mono">32 BIT</span></div>
+          <div class="cpu-card">
+            <div class="cpu-title"><span class="pulse"></span><span>R-type decode</span></div>
+            <div class="decode-line">add $14, $28, $2 → opcode | rs | rt | rd | shamt | funct</div>
+            <div class="field-strip">
+              <div class="hero-field">000000</div><div class="hero-field">11100</div><div class="hero-field">00010</div><div class="hero-field">01110</div><div class="hero-field">00000</div><div class="hero-field">100000</div>
+            </div>
+          </div>
+          <div class="callout good" style="position:relative;z-index:2;margin-top:14px"><b>Core habit:</b> write the field skeleton first. Binary comes second.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div><div class="eyebrow">Your dashboard</div><h2>Keep the momentum visible.</h2></div><p>Correct answers earn more XP, but every attempt counts toward today’s practice goal.</p></div>
+        <div class="grid g4">
+          <div class="card metric"><div class="metric-icon">◎</div><div><div class="metric-num" id="dashAccuracy">0%</div><div class="metric-label">Overall accuracy</div></div></div>
+          <div class="card metric"><div class="metric-icon">⚡</div><div><div class="metric-num" id="dashStreak">0</div><div class="metric-label">Current streak</div></div></div>
+          <div class="card metric"><div class="metric-icon">✓</div><div><div class="metric-num" id="dashAttempts">0</div><div class="metric-label">Questions attempted</div></div></div>
+          <div class="card level-card"><div class="level-ring" id="levelRing"><div><strong id="levelNum">1</strong><small>LEVEL</small></div></div><div><b id="xpLabel">0 / 250 XP</b><div class="metric-label">Next level</div><div class="progress-track" style="margin-top:8px"><div class="progress-fill" id="xpFill"></div></div></div></div>
+        </div>
+      </div>
+
+      <div class="section grid g2">
+        <div class="card">
+          <div class="section-head"><div><div class="eyebrow">Daily mission</div><h2 style="font-size:24px">10 attempts today</h2></div><div class="metric-num" id="dailyCount">0/10</div></div>
+          <div class="progress-track"><div class="progress-fill" id="dailyFill"></div></div>
+          <p id="dailyMsg">Warm up with one problem. The first rep is the hardest.</p>
+          <button class="btn small" data-jump="practice">Continue mission</button>
+        </div>
+        <div class="card">
+          <div class="section-head"><div><div class="eyebrow">Smart focus</div><h2 style="font-size:24px">Your weakest skill</h2></div></div>
+          <div class="mission"><div><b id="weakTopic">Not enough data yet</b><small id="weakDetail">Practice a few topics so the lab can adapt.</small></div><div class="combo-badge">⌁</div></div>
+          <div class="progress-track" style="margin-top:13px"><div class="progress-fill" id="weakFill"></div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div><div class="eyebrow">Why these drills</div><h2>The four traps behind most mistakes.</h2></div></div>
+        <div class="grid g2">
+          <div class="callout"><b>Assembly order is not field order.</b><br><span class="mono">add rd, rs, rt</span> becomes <span class="mono">opcode rs rt rd shamt funct</span>.</div>
+          <div class="callout"><b>Decimal still needs conversion.</b><br><span class="mono">1001</span> decimal is not the same thing as the bit pattern <span class="mono">1001</span>.</div>
+          <div class="callout"><b>For LW, parentheses matter.</b><br><span class="mono">lw rt, offset(rs)</span>: the register in parentheses is the base <span class="mono">rs</span>.</div>
+          <div class="callout"><b>Expressions can require a sequence.</b><br><span class="mono">(a+b)-c</span> means ADD first, then SUB using the previous result.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="learn">
+      <div class="section" style="margin-top:30px">
+        <div class="section-head"><div><div class="eyebrow">Pattern recognition</div><h2>See the format before you see the bits.</h2></div><p>Click “Play mapping” to watch the fields light up in the order the CPU sees them.</p></div>
+        <div class="grid g3">
+          <div class="card format-card r" data-format="r">
+            <div class="badge">R</div><h3>Register operations</h3><p>Class examples: <span class="mono">add</span>, <span class="mono">sub</span>, <span class="mono">and</span>.</p>
+            <div class="format-line"><div class="format-cell">opcode<span>6</span></div><div class="format-cell">rs<span>5</span></div><div class="format-cell">rt<span>5</span></div><div class="format-cell">rd<span>5</span></div><div class="format-cell">shamt<span>5</span></div><div class="format-cell">funct<span>6</span></div></div>
+            <div class="action-row"><button class="btn secondary small play-format" data-format="r">Play mapping</button></div>
+            <div class="callout" style="margin-top:12px"><span class="mono">add rd, rs, rt</span> → destination is written first in assembly, but <span class="mono">rd</span> is the fourth field in binary.</div>
+          </div>
+          <div class="card format-card i" data-format="i">
+            <div class="badge">I</div><h3>Immediate / offset</h3><p>Class examples: <span class="mono">addi</span>, <span class="mono">lw</span>.</p>
+            <div class="format-line"><div class="format-cell">opcode<span>6</span></div><div class="format-cell">rs<span>5</span></div><div class="format-cell">rt<span>5</span></div><div class="format-cell">immediate<span>16</span></div></div>
+            <div class="action-row"><button class="btn secondary small play-format" data-format="i">Play mapping</button></div>
+            <div class="callout" style="margin-top:12px"><span class="mono">addi rt, rs, imm</span> · <span class="mono">lw rt, offset(rs)</span></div>
+          </div>
+          <div class="card format-card j" data-format="j">
+            <div class="badge">J</div><h3>Jump target</h3><p>Class example: <span class="mono">j address</span>.</p>
+            <div class="format-line"><div class="format-cell">opcode<span>6</span></div><div class="format-cell">address<span>26</span></div></div>
+            <div class="action-row"><button class="btn secondary small play-format" data-format="j">Play mapping</button></div>
+            <div class="callout" style="margin-top:12px">No <span class="mono">rs</span>, <span class="mono">rt</span>, <span class="mono">rd</span>, <span class="mono">shamt</span>, or <span class="mono">funct</span>.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section grid g2">
+        <div class="card">
+          <div class="eyebrow">Exam-safe workflow</div><h2 style="font-size:25px;margin-top:4px">Six moves, every time.</h2>
+          <div class="workflow">
+            <div class="workflow-step"><div class="step-n">1</div><div><b>Identify the instruction.</b><small>ADD/SUB → R. ADDI/LW → I. J → J.</small></div></div>
+            <div class="workflow-step"><div class="step-n">2</div><div><b>Write the field skeleton.</b><small>Do this before converting any number.</small></div></div>
+            <div class="workflow-step"><div class="step-n">3</div><div><b>Map roles, not positions.</b><small>For <span class="mono">add $14,$28,$2</span>: rd=$14, rs=$28, rt=$2.</small></div></div>
+            <div class="workflow-step"><div class="step-n">4</div><div><b>Convert registers to 5 bits.</b><small>$28 → 11100 · $2 → 00010 · $14 → 01110.</small></div></div>
+            <div class="workflow-step"><div class="step-n">5</div><div><b>Convert the numeric field.</b><small>I immediate = 16 bits. J address = 26 bits.</small></div></div>
+            <div class="workflow-step"><div class="step-n">6</div><div><b>Insert opcode/funct and count 32.</b><small>Field widths are your final error check.</small></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Worked examples</div><h2 style="font-size:25px;margin-top:4px">Quiz-style mappings.</h2>
+          <div class="callout good" style="margin-top:12px"><b>R-type intention</b><br>“Add register 28 to register 2 and store in register 14.”<div class="solution">add $14, $28, $2<br>000000 11100 00010 01110 00000 100000</div></div>
+          <div class="callout good" style="margin-top:10px"><b>I-type load</b><br><span class="mono">lw $9, 4($10)</span><div class="solution">100011 01010 01001 0000000000000100</div></div>
+          <div class="callout good" style="margin-top:10px"><b>J-type jump</b><br><span class="mono">j 64</span><div class="solution">000010 00000000000000000001000000</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="practice">
+      <div class="section" style="margin-top:30px">
+        <div class="section-head"><div><div class="eyebrow">Practice lab</div><h2>One clean rep at a time.</h2></div><p>Smart Mix leans toward your weakest saved topic. Correct answers trigger XP, streaks, and a little celebration.</p></div>
+        <div class="practice-layout">
+          <div class="practice-main">
+            <div class="card">
+              <div class="practice-toolbar">
+                <select id="topicSelect" class="select" aria-label="Practice topic">
+                  <option value="smart">Smart Mix · recommended</option>
+                  <option value="assembly">Intention → Assembly</option>
+                  <option value="rencode">R-type → Binary</option>
+                  <option value="iencode">ADDI → Binary</option>
+                  <option value="lw">LW → Binary</option>
+                  <option value="jencode">J-type → Binary</option>
+                  <option value="expression">Two-step expression</option>
+                </select>
+                <button class="btn secondary" id="newProblem">New problem</button>
+              </div>
+              <div class="problem-card" id="problemBox"></div>
+            </div>
+          </div>
+          <aside class="side-stack">
+            <div class="mini-stat"><div class="combo"><div><small>Current streak</small><div class="big" id="practiceStreak">0</div></div><div class="combo-badge">⚡</div></div></div>
+            <div class="mini-stat"><div class="combo"><div><small>Session accuracy</small><div class="big" id="practiceAccuracy">0%</div></div><div class="combo-badge">◎</div></div></div>
+            <div class="mini-stat"><small>Today’s mission</small><div class="big" id="practiceDaily">0/10</div><div class="progress-track" style="margin-top:9px"><div class="progress-fill" id="practiceDailyFill"></div></div></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="codes">
+      <div class="section" style="margin-top:30px">
+        <div class="section-head"><div><div class="eyebrow">Designated reference</div><h2>What code goes in each box?</h2></div><p>This table stays aligned with the codes explicitly shown in your uploaded class material. Items your quiz classifies but does not give a binary code for are marked accordingly.</p></div>
+        <div class="card">
+          <div class="code-toolbar"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="R">R-type</button><button class="filter-btn" data-filter="I">I-type</button><button class="filter-btn" data-filter="J">J-type</button></div>
+          <div class="table-wrap">
+            <table id="codeTable"><thead><tr><th>Instruction</th><th>Type</th><th>Opcode (6)</th><th>Funct (6)</th><th>Assembly pattern</th><th>What matters</th></tr></thead><tbody>
+              <tr data-type="R"><td><b>add</b> <span class="chip class">class material</span></td><td>R</td><td class="code">000000</td><td class="code">100000</td><td class="mono">add rd, rs, rt</td><td>shamt = 00000</td></tr>
+              <tr data-type="R"><td><b>sub</b> <span class="chip class">class material</span></td><td>R</td><td class="code">000000</td><td class="code">100010</td><td class="mono">sub rd, rs, rt</td><td>shamt = 00000</td></tr>
+              <tr data-type="R"><td><b>and</b> <span class="chip class">class material</span></td><td>R</td><td class="code">000000</td><td class="code">100100</td><td class="mono">and rd, rs, rt</td><td>shamt = 00000</td></tr>
+              <tr data-type="I"><td><b>addi</b> <span class="chip class">class material</span></td><td>I</td><td class="code">001000</td><td>—</td><td class="mono">addi rt, rs, imm</td><td>16-bit immediate</td></tr>
+              <tr data-type="I"><td><b>lw</b> <span class="chip class">class material</span></td><td>I</td><td class="code">100011</td><td>—</td><td class="mono">lw rt, offset(rs)</td><td>rs = base, rt = destination</td></tr>
+              <tr data-type="J"><td><b>j</b> <span class="chip class">class material</span></td><td>J</td><td class="code">000010</td><td>—</td><td class="mono">j address</td><td>26-bit address</td></tr>
+              <tr data-type="I"><td><b>sw</b> <span class="chip">quiz classification</span></td><td>I</td><td>not listed in supplied slides</td><td>—</td><td class="mono">sw rt, offset(rs)</td><td>Quiz identifies SW as I-type</td></tr>
+              <tr data-type="I"><td><b>beq</b> <span class="chip">quiz classification</span></td><td>I</td><td>not listed in supplied slides</td><td>—</td><td class="mono">beq rs, rt, offset</td><td>Quiz identifies BEQ as I-type</td></tr>
+              <tr data-type="J"><td><b>jal</b> <span class="chip">quiz classification</span></td><td>J</td><td>not listed in supplied slides</td><td>—</td><td class="mono">jal address</td><td>Quiz identifies JAL as J-type</td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <div class="section grid g2">
+        <div class="card"><div class="eyebrow">Register map</div><h2 style="font-size:24px;margin-top:4px">0–31 → exactly 5 bits</h2><div class="table-wrap" style="margin-top:12px" id="regTable"></div></div>
+        <div class="card"><div class="eyebrow">Quick patterns</div><h2 style="font-size:24px;margin-top:4px">Fill the boxes in this order.</h2>
+          <div class="callout" style="margin-top:12px"><b>R-type</b><div class="solution">opcode | rs | rt | rd | shamt | funct</div></div>
+          <div class="callout" style="margin-top:10px"><b>I-type</b><div class="solution">opcode | rs | rt | immediate</div></div>
+          <div class="callout" style="margin-top:10px"><b>J-type</b><div class="solution">opcode | address</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="convert">
+      <div class="section" style="margin-top:30px">
+        <div class="section-head"><div><div class="eyebrow">Binary converter</div><h2>Build familiarity with the widths.</h2></div><p>Use this to check a register number, I-type immediate, or J-type address while you practice.</p></div>
+        <div class="card converter-card">
+          <div>
+            <h3>Decimal → binary</h3><p>Try values from the quiz style: 28, 30, 100, 1001, 4096.</p>
+            <div class="converter-form"><input class="text-input" id="decInput" inputmode="numeric" value="100" aria-label="Decimal number"><button class="btn" id="convertBtn">Convert</button></div>
+            <div class="callout" style="margin-top:12px">The number itself does not tell you its field width. The instruction format does: register = 5, I immediate = 16, J address = 26.</div>
+          </div>
+          <div class="bit-panels" id="bitPanels"></div>
+        </div>
+      </div>
+
+      <div class="section card"><div class="eyebrow">Common practice values</div><h2 style="font-size:24px;margin:4px 0 12px">Fast reference</h2><div class="table-wrap"><table><thead><tr><th>Decimal</th><th>5-bit register</th><th>16-bit field</th><th>26-bit address</th></tr></thead><tbody id="commonConv"></tbody></table></div></div>
+    </section>
+
+    <section class="page" id="progress">
+      <div class="section" style="margin-top:30px">
+        <div class="section-head"><div><div class="eyebrow">Progress</div><h2>Your mastery, not just your score.</h2></div><p>Everything below is saved in this browser automatically.</p></div>
+        <div class="grid g4">
+          <div class="card metric"><div class="metric-icon">◎</div><div><div class="metric-num" id="pAccuracy">0%</div><div class="metric-label">Accuracy</div></div></div>
+          <div class="card metric"><div class="metric-icon">✓</div><div><div class="metric-num" id="pCorrect">0</div><div class="metric-label">Correct answers</div></div></div>
+          <div class="card metric"><div class="metric-icon">⚡</div><div><div class="metric-num" id="pBest">0</div><div class="metric-label">Best streak</div></div></div>
+          <div class="card metric"><div class="metric-icon">XP</div><div><div class="metric-num" id="pXP">0</div><div class="metric-label">Total XP</div></div></div>
+        </div>
+      </div>
+
+      <div class="section grid g2">
+        <div class="card"><div class="eyebrow">Topic mastery</div><h2 style="font-size:24px;margin-top:4px">Accuracy by skill</h2><div class="mastery-list" id="topicStats" style="margin-top:10px"></div></div>
+        <div class="card"><div class="eyebrow">Achievements</div><h2 style="font-size:24px;margin-top:4px">Small wins that stack.</h2><div class="achievements" id="achievements" style="margin-top:12px"></div></div>
+      </div>
+
+      <div class="section card"><div class="section-head"><div><div class="eyebrow">Backup</div><h2 style="font-size:24px">Keep your progress portable.</h2></div></div><div class="file-actions"><button class="btn secondary" id="exportBtn">Export progress</button><label class="btn secondary file-btn">Import progress<input type="file" id="importFile" accept="application/json"></label><button class="btn danger" id="resetBtn">Reset progress</button><span id="progressMsg" style="color:var(--muted);font-size:12px"></span></div></div>
+    </section>
+  </main>
+
+  <footer class="footer"><span>MIPS Mastery Lab · built around your uploaded class material and quiz patterns.</span><span>Cloud sync keeps your progress consistent across signed-in devices.</span></footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="confetti" id="confetti" aria-hidden="true"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+(()=>{
+  if(window.__mipsMasteryInteractiveInit)return;
+  window.__mipsMasteryInteractiveInit=true;
+
+  const STORAGE='mipsMasteryLab_v1';
+  const topics=['assembly','rencode','iencode','lw','jencode','expression'];
+  const topicNames={assembly:'Intention → Assembly',rencode:'R-type → Binary',iencode:'ADDI → Binary',lw:'LW → Binary',jencode:'J-type → Binary',expression:'Two-step expression'};
+  const blankStats=()=>Object.fromEntries(topics.map(t=>[t,{attempts:0,correct:0}]));
+  const todayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+  let state={attempts:0,correct:0,streak:0,bestStreak:0,topics:blankStats(),current:null,xp:0,daily:{date:todayKey(),attempts:0,correct:0},updatedAt:0};
+  let hadLocalProgress=false;
+  try{
+    const old=JSON.parse(localStorage.getItem(STORAGE)||'null');
+    if(old){
+      hadLocalProgress=true;
+      state={...state,...old,topics:{...blankStats(),...(old.topics||{})},daily:{...state.daily,...(old.daily||{})}};
+      if(typeof old.xp!=='number')state.xp=(old.correct||0)*35+Math.max(0,(old.attempts||0)-(old.correct||0))*10;
+    }
+  }catch(e){}
+  if(state.daily.date!==todayKey())state.daily={date:todayKey(),attempts:0,correct:0};
+
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const bin=(n,w)=>{if(n<0)n=2**w+n;return Math.trunc(n).toString(2).padStart(w,'0').slice(-w)};
+  const reg=n=>bin(n,5), imm=n=>bin(n,16);
+  const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'').replace(/;/g,'');
+  const rint=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+
+  let cloudClient=null;
+  let cloudUser=null;
+  let cloudReady=false;
+  let cloudSaveTimer=null;
+  let applyingRemote=false;
+  let saveTimer=null;
+
+  function setCloudStatus(kind,text){
+    const pill=$('#savePill');
+    pill.classList.remove('cloud-syncing','cloud-error');
+    if(kind==='syncing')pill.classList.add('cloud-syncing');
+    if(kind==='error')pill.classList.add('cloud-error');
+    $('#saveText').textContent=text;
+  }
+
+  function normalizeIncoming(x){
+    if(!x||typeof x!=='object')return null;
+    return {
+      ...state,
+      ...x,
+      topics:{...blankStats(),...(x.topics||{})},
+      daily:{...state.daily,...(x.daily||{})},
+      updatedAt:Number(x.updatedAt||0)
+    };
+  }
+
+  function persistLocal(){
+    localStorage.setItem(STORAGE,JSON.stringify(state));
+  }
+
+  async function pushCloud(){
+    if(!cloudReady||!cloudClient||!cloudUser)return;
+    setCloudStatus('syncing','Syncing…');
+    const payload={...state,updatedAt:Number(state.updatedAt||Date.now())};
+    const {error}=await cloudClient.from('mips_progress').upsert({
+      user_id:cloudUser.id,
+      data:payload,
+      updated_at:new Date().toISOString()
+    },{onConflict:'user_id'});
+    if(error){setCloudStatus('error','Cloud sync failed');console.error(error);return;}
+    setCloudStatus('ok','Synced to cloud');
+  }
+
+  function scheduleCloudSave(){
+    if(!cloudReady||applyingRemote)return;
+    clearTimeout(cloudSaveTimer);
+    setCloudStatus('syncing','Saving…');
+    cloudSaveTimer=setTimeout(pushCloud,650);
+  }
+
+  async function initialCloudMerge(){
+    if(!cloudClient||!cloudUser)return;
+    setCloudStatus('syncing','Loading cloud progress…');
+    const {data,error}=await cloudClient.from('mips_progress').select('data,updated_at').eq('user_id',cloudUser.id).maybeSingle();
+    if(error){setCloudStatus('error','Could not load cloud');console.error(error);return;}
+    const remote=normalizeIncoming(data&&data.data);
+    if(remote){
+      const remoteStamp=Number(remote.updatedAt||0),localStamp=Number(state.updatedAt||0);
+      if(!hadLocalProgress||remoteStamp>localStamp){
+        applyingRemote=true;
+        state=remote;
+        if(state.daily.date!==todayKey())state.daily={date:todayKey(),attempts:0,correct:0};
+        persistLocal();
+        applyingRemote=false;
+        renderStats();
+        renderProblem(state.current||makeProblem('smart'));
+      }else if(localStamp>remoteStamp){
+        await pushCloud();
+      }
+    }else{
+      if(!state.updatedAt)state.updatedAt=Date.now();
+      persistLocal();
+      await pushCloud();
+    }
+    setCloudStatus('ok','Synced to cloud');
+  }
+
+  function showAuth(message=''){
+    $('#authGate').style.display='grid';
+    $('#app').classList.add('cloud-locked');
+    $('#signOutBtn').classList.add('hide');
+    $('#profilePill').classList.remove('show');
+    if(message){$('#authError').textContent=message;$('#authError').classList.add('show')}
+  }
+
+  function showApp(user){
+    $('#authGate').style.display='none';
+    $('#app').classList.remove('cloud-locked');
+    $('#profileEmail').textContent=user.email||'Signed in';
+    $('#profilePill').classList.add('show');
+    $('#signOutBtn').classList.remove('hide');
+  }
+
+  async function initCloudAuth(){
+    try{
+      setCloudStatus('syncing','Connecting…');
+      const res=await fetch('/api/config',{cache:'no-store'});
+      if(!res.ok)throw new Error('Cloud configuration endpoint is unavailable.');
+      const cfg=await res.json();
+      if(!cfg.supabaseUrl||!cfg.supabaseAnonKey)throw new Error('Supabase environment variables are missing on Vercel.');
+      if(!window.supabase||!window.supabase.createClient)throw new Error('Supabase library did not load.');
+      cloudClient=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      const {data:{session}}=await cloudClient.auth.getSession();
+      if(session&&session.user){
+        cloudUser=session.user;cloudReady=true;showApp(cloudUser);await initialCloudMerge();
+      }else{
+        setCloudStatus('ok','Sign in to sync');showAuth();
+      }
+      cloudClient.auth.onAuthStateChange(async(event,session2)=>{
+        if(event==='SIGNED_OUT'||!session2){cloudUser=null;cloudReady=false;showAuth();setCloudStatus('ok','Signed out');return;}
+        if(session2.user&&(!cloudUser||cloudUser.id!==session2.user.id)){
+          cloudUser=session2.user;cloudReady=true;showApp(cloudUser);await initialCloudMerge();
+        }
+      });
+    }catch(err){
+      console.error(err);showAuth(err.message||'Cloud setup error.');setCloudStatus('error','Cloud setup required');
+    }
+  }
+
+  function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1600)}
+  function save(){
+    if(!applyingRemote)state.updatedAt=Date.now();
+    persistLocal();
+    if(cloudReady)scheduleCloudSave();
+    else setCloudStatus('ok','Saved on this device');
+    clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(!cloudReady)setCloudStatus('ok','Saved on this device')},1000);
+    renderStats();
+  }
+
+  function showPage(id){
+    $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+    $$('.page').forEach(p=>p.classList.toggle('active',p.id===id));
+    if(id==='progress')renderStats();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  $$('.nav-btn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+  $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.jump)));
+
+  function topicAccuracy(t){const s=state.topics[t];return s.attempts?s.correct/s.attempts:null}
+  function weakestTopic(){
+    const unseen=topics.filter(t=>state.topics[t].attempts===0);
+    if(unseen.length)return unseen[rint(0,unseen.length-1)];
+    return topics.slice().sort((a,b)=>topicAccuracy(a)-topicAccuracy(b))[0];
+  }
+  function chooseSmart(){
+    const w=weakestTopic();
+    if(Math.random()<.62)return w;
+    return topics[rint(0,topics.length-1)];
+  }
+
+  function record(topic,ok){
+    if(state.daily.date!==todayKey())state.daily={date:todayKey(),attempts:0,correct:0};
+    state.attempts++;state.daily.attempts++;state.topics[topic].attempts++;
+    if(ok){state.correct++;state.daily.correct++;state.topics[topic].correct++;state.streak++;state.bestStreak=Math.max(state.bestStreak,state.streak);state.xp+=35;confetti();}
+    else{state.streak=0;state.xp+=10}
+    save();
+  }
+
+  function makeProblem(topic){
+    if(topic==='smart')topic=chooseSmart();
+    if(topic==='assembly'){
+      const kind=['add','sub','addi','lw'][rint(0,3)];
+      if(kind==='add'||kind==='sub'){
+        const rd=rint(2,30),rs=rint(2,30),rt=rint(2,30);
+        const prompt=kind==='add'?`Add register ${rs} to register ${rt} and store the result in register ${rd}.`:`Subtract register ${rt} from register ${rs} and store the result in register ${rd}.`;
+        return {topic,type:'text',title:'Intention → Assembly',prompt,answer:`${kind} $${rd}, $${rs}, $${rt}`,hint:`Write the destination first, then the two source registers.`,explain:`Assembly order is ${kind} rd, rs, rt. The destination is $${rd}.`};
+      }
+      if(kind==='addi'){
+        const rt=rint(2,30),rs=rint(2,30),v=[5,10,20,100,255,1001][rint(0,5)];
+        return {topic,type:'text',title:'Intention → Assembly',prompt:`Add immediate ${v} to register ${rs} and store the result in register ${rt}.`,answer:`addi $${rt}, $${rs}, ${v}`,hint:`ADDI assembly is addi rt, rs, immediate.`,explain:`ADDI puts the destination rt first, then source rs, then the immediate.`};
+      }
+      const rs=rint(2,30),rt=rint(2,30),off=[0,4,8,12,16][rint(0,4)];
+      return {topic,type:'text',title:'Intention → Assembly',prompt:`Load a word into register ${rt} using register ${rs} as the base address with offset ${off}.`,answer:`lw $${rt}, ${off}($${rs})`,hint:`LW is lw rt, offset(rs). The base register goes inside parentheses.`,explain:`The destination is rt=$${rt}; the base is rs=$${rs}; offset=${off}.`};
+    }
+    if(topic==='rencode'){
+      const op=Math.random()<.58?'add':'sub',rd=rint(1,30),rs=rint(1,30),rt=rint(1,30),funct=op==='add'?'100000':'100010';
+      return {topic,type:'fieldsR',title:'R-type → 32-bit Binary',prompt:`Encode: ${op} $${rd}, $${rs}, $${rt}`,fields:['000000',reg(rs),reg(rt),reg(rd),'00000',funct],names:['opcode','rs','rt','rd','shamt','funct'],hint:`First map roles: rd=$${rd}, rs=$${rs}, rt=$${rt}. Then fill binary field order.`,explain:`rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, rd=$${rd}→${reg(rd)}. ${op.toUpperCase()} funct=${funct}.`};
+    }
+    if(topic==='iencode'){
+      const rs=rint(1,30),rt=rint(1,30),v=[5,10,20,63,100,255,511,1001][rint(0,7)];
+      return {topic,type:'fieldsI',title:'ADDI → 32-bit Binary',prompt:`Encode: addi $${rt}, $${rs}, ${v}`,fields:['001000',reg(rs),reg(rt),imm(v)],names:['opcode','rs','rt','immediate'],hint:`ADDI field order is opcode | rs | rt | immediate. Convert ${v} to 16 bits.`,explain:`ADDI opcode=001000. rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, ${v}→${imm(v)}.`};
+    }
+    if(topic==='lw'){
+      const rs=rint(1,30),rt=rint(1,30),off=[0,4,8,12,16,20,24,28][rint(0,7)];
+      return {topic,type:'fieldsI',title:'LW → 32-bit Binary',prompt:`Encode: lw $${rt}, ${off}($${rs})`,fields:['100011',reg(rs),reg(rt),imm(off)],names:['opcode','rs · base','rt · destination','immediate'],hint:`The register inside parentheses is rs. The first register is rt.`,explain:`LW is lw rt, offset(rs). rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, offset ${off}→${imm(off)}.`};
+    }
+    if(topic==='jencode'){
+      const addr=[64,128,256,512,1000,1024,2048,4096][rint(0,7)];
+      return {topic,type:'fieldsJ',title:'J-type → 32-bit Binary',prompt:`Encode: j ${addr}`,fields:['000010',bin(addr,26)],names:['opcode','address'],hint:`J-type has only opcode and a 26-bit address field.`,explain:`J uses opcode 000010 in your class material. ${addr}→${bin(addr,26)} as 26 bits.`};
+    }
+    const a=rint(2,14),b=rint(15,22),c=rint(1,10),d=rint(23,30);
+    return {topic,type:'textmulti',title:'Two-step expression',prompt:`a is in $${a}, b is in $${b}, c is in $${c}. Calculate (a + b) - c and store the final result in $${d}. Write the two assembly instructions.`,answer:`add $${d}, $${a}, $${b}\nsub $${d}, $${d}, $${c}`,hint:`Use the final destination as a temporary: store a+b there first, then subtract c.`,explain:`First add a+b into $${d}. Then use that result as rs for the subtraction.`};
+  }
+
+  function renderProblem(p){
+    state.current=p;save();
+    const box=$('#problemBox');
+    box.classList.remove('correct','wrong');
+    let input='';
+    if(p.type==='text'||p.type==='textmulti'){
+      input=`<textarea id="textAns" class="text-input" rows="${p.type==='textmulti'?3:2}" placeholder="Type your assembly answer"></textarea>`;
+    }else{
+      const cls=p.type==='fieldsR'?'r':p.type==='fieldsJ'?'j':'i';
+      input=`<div class="answer-grid ${cls}">${p.names.map((n,i)=>`<div><div class="field-label">${n}</div><input class="bit-input" data-i="${i}" maxlength="${p.fields[i].length}" inputmode="numeric" autocomplete="off" placeholder="${p.fields[i].length} bits"></div>`).join('')}</div>`;
+    }
+    box.innerHTML=`<div class="problem-type"><span>${topicNames[p.topic]}</span><span class="difficulty">Practice rep</span></div><div class="prompt">${p.prompt}</div>${input}<div class="action-row"><button class="btn good" id="checkAns">Check answer</button><button class="btn secondary" id="hintBtn">Hint</button><button class="btn secondary" id="revealAns">Show solution</button></div><div class="hint-box" id="hintBox">${p.hint}</div><div class="feedback" id="fb"></div>`;
+    $('#checkAns').addEventListener('click',()=>checkProblem(p));
+    $('#hintBtn').addEventListener('click',()=>$('#hintBox').classList.toggle('show'));
+    $('#revealAns').addEventListener('click',()=>reveal(p,null));
+    const bits=$$('.bit-input');
+    bits.forEach((inp,i)=>{
+      inp.addEventListener('input',()=>{
+        inp.value=inp.value.replace(/[^01]/g,'').slice(0,Number(inp.maxLength));
+        if(inp.value.length===Number(inp.maxLength)&&bits[i+1])bits[i+1].focus();
+      });
+      inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&bits[i-1])bits[i-1].focus()});
+    });
+    setTimeout(()=>{const first=$('#textAns')||$('.bit-input');if(first)first.focus()},60);
+  }
+
+  function checkProblem(p){
+    let ok=false;
+    if(p.type==='text'||p.type==='textmulti')ok=norm($('#textAns').value)===norm(p.answer);
+    else{
+      const vals=$$('.bit-input').map(x=>x.value.replace(/[^01]/g,''));
+      ok=vals.length===p.fields.length&&vals.every((v,i)=>v===p.fields[i]);
+    }
+    record(p.topic,ok);
+    const box=$('#problemBox');box.classList.remove('correct','wrong');void box.offsetWidth;box.classList.add(ok?'correct':'wrong');
+    reveal(p,ok);
+    $('#checkAns').disabled=true;
+    if(ok)toast('+35 XP · clean encode');else toast('+10 XP · review the mapping');
+  }
+
+  function reveal(p,ok){
+    const fb=$('#fb');
+    const solution=p.fields?p.fields.join(' '):p.answer.replace(/\n/g,'<br>');
+    fb.className='feedback show '+(ok===true?'ok':'no');
+    const title=ok===true?'Correct — lock in why it worked.':ok===false?'Not yet — trace the fields once.':'Solution revealed — study the mapping.';
+    fb.innerHTML=`<b>${title}</b><div style="margin-top:6px">${p.explain}</div><div class="solution">${solution}</div>${ok!==null?'<div class="action-row"><button class="btn small" id="nextProblem">Next problem</button></div>':''}`;
+    if(ok!==null)$('#nextProblem').addEventListener('click',()=>renderProblem(makeProblem($('#topicSelect').value)));
+  }
+
+  $('#newProblem').addEventListener('click',()=>renderProblem(makeProblem($('#topicSelect').value)));
+
+  function confetti(){
+    const host=$('#confetti');host.innerHTML='';
+    const colors=['#ffbd59','#58d0b4','#76a8ff','#a98bff','#ff8273'];
+    for(let i=0;i<28;i++){
+      const p=document.createElement('i');
+      p.style.left=(15+Math.random()*70)+'%';p.style.background=colors[i%colors.length];p.style.setProperty('--dx',(Math.random()*180-90)+'px');p.style.animationDelay=(Math.random()*.18)+'s';p.style.transform=`rotate(${Math.random()*180}deg)`;host.appendChild(p);
+    }
+    setTimeout(()=>host.innerHTML='',1500);
+  }
+
+  function playFormat(type){
+    const card=$(`.format-card[data-format="${type}"]`);if(!card)return;
+    const cells=[...card.querySelectorAll('.format-cell')];cells.forEach(c=>c.classList.remove('lit'));
+    cells.forEach((c,i)=>setTimeout(()=>{cells.forEach(x=>x.classList.remove('lit'));c.classList.add('lit')},i*430));
+    setTimeout(()=>cells.forEach(x=>x.classList.remove('lit')),cells.length*430+500);
+  }
+  $$('.play-format').forEach(b=>b.addEventListener('click',()=>playFormat(b.dataset.format)));
+
+  function renderRegTable(){
+    let h='<table><thead><tr><th>Register #</th><th>5-bit binary</th><th>Register #</th><th>5-bit binary</th></tr></thead><tbody>';
+    for(let i=0;i<16;i++)h+=`<tr><td>$${i}</td><td class="code">${reg(i)}</td><td>$${i+16}</td><td class="code">${reg(i+16)}</td></tr>`;
+    h+='</tbody></table>';$('#regTable').innerHTML=h;
+  }
+  renderRegTable();
+
+  $$('.filter-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    $$('.filter-btn').forEach(x=>x.classList.toggle('active',x===btn));
+    const f=btn.dataset.filter;$$('#codeTable tbody tr').forEach(r=>r.classList.toggle('hide',f!=='all'&&r.dataset.type!==f));
+  }));
+
+  const commons=[2,4,9,10,12,13,14,15,16,20,22,23,28,30,64,100,1000,1001,4096];
+  $('#commonConv').innerHTML=commons.map(n=>`<tr><td>${n}</td><td class="code">${n<=31?reg(n):'—'}</td><td class="code">${n<=65535?imm(n):'—'}</td><td class="code">${n>=0?bin(n,26):'—'}</td></tr>`).join('');
+
+  function tiles(bits){return bits.split('').map((b,i)=>`<span class="bit-tile" style="animation-delay:${Math.min(i,20)*.018}s">${b}</span>`).join('')}
+  function convert(){
+    const n=Number($('#decInput').value),out=$('#bitPanels');
+    if(!Number.isInteger(n)||n<-32768||n>67108863){out.innerHTML='<div class="callout red">Enter an integer from -32,768 to 67,108,863.</div>';return}
+    const panels=[];
+    if(n>=0&&n<=31)panels.push(`<div class="bit-panel"><div class="bit-panel-head"><b>5-bit register</b><small>0–31 only</small></div><div class="bit-tiles">${tiles(reg(n))}</div></div>`);
+    else panels.push(`<div class="bit-panel"><div class="bit-panel-head"><b>5-bit register</b><small>not valid for ${n}</small></div><p>Register identifiers use decimal 0–31 only.</p></div>`);
+    if(n>=-32768&&n<=65535)panels.push(`<div class="bit-panel"><div class="bit-panel-head"><b>16-bit field</b><small>I-type immediate / offset</small></div><div class="bit-tiles">${tiles(imm(n))}</div></div>`);
+    else panels.push(`<div class="bit-panel"><div class="bit-panel-head"><b>16-bit field</b><small>outside helper range</small></div></div>`);
+    if(n>=0&&n<=67108863)panels.push(`<div class="bit-panel"><div class="bit-panel-head"><b>26-bit address</b><small>J-type address field</small></div><div class="bit-tiles">${tiles(bin(n,26))}</div></div>`);
+    out.innerHTML=panels.join('');
+  }
+  $('#convertBtn').addEventListener('click',convert);$('#decInput').addEventListener('keydown',e=>{if(e.key==='Enter')convert()});convert();
+
+  const achievements=[
+    {id:'first',icon:'1',name:'First Byte',desc:'Complete 1 attempt',on:()=>state.attempts>=1},
+    {id:'streak',icon:'⚡',name:'Five Alive',desc:'Reach a 5-answer streak',on:()=>state.bestStreak>=5},
+    {id:'r',icon:'R',name:'R-type Ready',desc:'Get 5 R-type encodes correct',on:()=>state.topics.rencode.correct>=5},
+    {id:'lw',icon:'↧',name:'Memory Mapper',desc:'Get 5 LW encodes correct',on:()=>state.topics.lw.correct>=5},
+    {id:'j',icon:'J',name:'Jump Start',desc:'Get 3 J-type encodes correct',on:()=>state.topics.jencode.correct>=3},
+    {id:'all',icon:'★',name:'Full Circuit',desc:'Attempt every topic',on:()=>topics.every(t=>state.topics[t].attempts>=1)}
+  ];
+
+  function renderStats(){
+    const acc=state.attempts?Math.round(state.correct/state.attempts*100):0;
+    const level=Math.floor(state.xp/250)+1,xpIn=state.xp%250,xpPct=xpIn/250*100;
+    const daily=clamp(state.daily.attempts,0,10),dailyPct=daily/10*100;
+    ['dashAccuracy','pAccuracy','practiceAccuracy'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=acc+'%'});
+    $('#dashAttempts').textContent=state.attempts;$('#dashStreak').textContent=state.streak;$('#practiceStreak').textContent=state.streak;
+    $('#levelNum').textContent=level;$('#xpLabel').textContent=`${xpIn} / 250 XP`;$('#xpFill').style.width=xpPct+'%';$('#levelRing').style.setProperty('--p',xpPct+'%');
+    $('#dailyCount').textContent=`${daily}/10`;$('#dailyFill').style.width=dailyPct+'%';$('#practiceDaily').textContent=`${daily}/10`;$('#practiceDailyFill').style.width=dailyPct+'%';
+    $('#dailyMsg').textContent=daily>=10?'Daily mission complete. Anything else is bonus mastery.':daily>=5?'Halfway there — your pattern recognition is warming up.':'Warm up with a few clean reps and let Smart Mix adapt.';
+    $('#pCorrect').textContent=state.correct;$('#pBest').textContent=state.bestStreak;$('#pXP').textContent=state.xp;
+    const weak=weakestTopic(),ws=state.topics[weak],wa=ws.attempts?Math.round(ws.correct/ws.attempts*100):0;
+    $('#weakTopic').textContent=ws.attempts?topicNames[weak]:topicNames[weak]+' · unseen';$('#weakDetail').textContent=ws.attempts?`${ws.correct}/${ws.attempts} correct · Smart Mix will favor this.`:'Smart Mix will introduce this topic soon.';$('#weakFill').style.width=(ws.attempts?wa:8)+'%';
+    $('#topicStats').innerHTML=topics.map(t=>{const s=state.topics[t],a=s.attempts?Math.round(s.correct/s.attempts*100):0;return `<div class="mastery-row"><b>${topicNames[t]}</b><div class="mastery-bar"><i style="width:${a}%"></i></div><small>${s.correct}/${s.attempts} · ${a}%</small></div>`}).join('');
+    $('#achievements').innerHTML=achievements.map(a=>`<div class="achievement ${a.on()?'unlocked':''}"><div class="achievement-icon">${a.icon}</div><div><b>${a.name}</b><small>${a.desc}</small></div></div>`).join('');
+  }
+
+  $('#resetBtn').addEventListener('click',()=>{if(confirm('Reset all saved MIPS Mastery Lab progress on this browser?')){state={attempts:0,correct:0,streak:0,bestStreak:0,topics:blankStats(),current:null,xp:0,daily:{date:todayKey(),attempts:0,correct:0},updatedAt:Date.now()};save();renderProblem(makeProblem('smart'));$('#progressMsg').textContent='Progress reset.';toast('Progress reset')}});
+  $('#exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mips-mastery-progress.json';a.click();URL.revokeObjectURL(a.href);$('#progressMsg').textContent='Progress exported.';toast('Progress exported')});
+  $('#importFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);state={...state,...x,topics:{...blankStats(),...(x.topics||{})},daily:{...state.daily,...(x.daily||{})}};save();renderProblem(state.current||makeProblem('smart'));$('#progressMsg').textContent='Progress imported.';toast('Progress imported')}catch(err){$('#progressMsg').textContent='That file is not valid progress data.';toast('Import failed')}};r.readAsText(f)});
+
+  $('#loginForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    $('#authError').classList.remove('show');
+    const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value;
+    if(!cloudClient){$('#authError').textContent='Cloud setup is not ready yet.';$('#authError').classList.add('show');return;}
+    const btn=$('#loginBtn');btn.disabled=true;btn.textContent='Signing in…';
+    const {data,error}=await cloudClient.auth.signInWithPassword({email,password});
+    btn.disabled=false;btn.textContent='Sign in';
+    if(error||!data.user){$('#authError').textContent=error?.message||'Could not sign in.';$('#authError').classList.add('show');return;}
+    cloudUser=data.user;cloudReady=true;showApp(cloudUser);await initialCloudMerge();
+  });
+
+  $('#signOutBtn').addEventListener('click',async()=>{
+    clearTimeout(cloudSaveTimer);
+    if(cloudReady)await pushCloud();
+    if(cloudClient)await cloudClient.auth.signOut();
+    cloudUser=null;cloudReady=false;showAuth();
+  });
+
+  window.addEventListener('online',()=>{if(cloudReady)initialCloudMerge()});
+  window.addEventListener('beforeunload',()=>{persistLocal()});
+
+  renderStats();
+  renderProblem(state.current||makeProblem('smart'));
+  initCloudAuth();
+})();
+</script>
+</body>
+</html>
