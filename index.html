@@ -579,9 +579,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
       const res=await fetch('/api/config',{cache:'no-store'});
       if(!res.ok)throw new Error('Cloud configuration endpoint is unavailable.');
       const cfg=await res.json();
-      let suUrl=String(cfg.supabaseUrl||'').trim().replace(/^["']|["']$/g,'');
+      let rawUrl=String(cfg.supabaseUrl||'').trim().replace(/^["']|["']$/g,'');
+      let rawKey=String(cfg.supabaseAnonKey||'').trim().replace(/^["']|["']$/g,'');
+      if(rawUrl.includes('eyJ')||(rawKey.includes('.supabase.co')&&!rawUrl.includes('.supabase.co'))){
+        const t=rawUrl;rawUrl=rawKey;rawKey=t;
+      }
+      let suUrl=rawUrl;
       try{if(suUrl){const u=new URL(suUrl.startsWith('http')?suUrl:'https://'+suUrl);suUrl=u.origin;}}catch(_){}
-      const suKey=String(cfg.supabaseAnonKey||'').trim().replace(/^["']|["']$/g,'');
+      const suKey=rawKey.replace(/^https?:\/\//,'');
       if(!suUrl||!suKey)throw new Error('Supabase environment variables are missing on Vercel.');
       if(!window.supabase||!window.supabase.createClient)throw new Error('Supabase library did not load.');
       cloudClient=window.supabase.createClient(suUrl,suKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -812,7 +817,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     const btn=$('#loginBtn');btn.disabled=true;btn.textContent='Signing in…';
     const {data,error}=await cloudClient.auth.signInWithPassword({email,password});
     btn.disabled=false;btn.textContent='Sign in';
-    if(error||!data.user){$('#authError').textContent=error?.message||'Could not sign in.';$('#authError').classList.add('show');return;}
+    if(error||!data.user){
+      let msg=error?.message||'Could not sign in.';
+      if(msg.includes('Failed to fetch'))msg='Failed to fetch: please verify your Supabase project is active and URL is reachable.';
+      $('#authError').textContent=msg;$('#authError').classList.add('show');return;
+    }
     cloudUser=data.user;cloudReady=true;showApp(cloudUser);await initialCloudMerge();
   });
 
