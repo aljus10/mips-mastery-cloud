@@ -341,9 +341,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
         </div>
         <div class="card">
           <div class="eyebrow">Worked examples</div><h2 style="font-size:25px;margin-top:4px">Quiz-style mappings.</h2>
-          <div class="callout good" style="margin-top:12px"><b>R-type intention</b><br>“Add register 28 to register 2 and store in register 14.”<div class="solution">add $14, $28, $2<br>000000 11100 00010 01110 00000 100000</div></div>
-          <div class="callout good" style="margin-top:10px"><b>I-type load</b><br><span class="mono">lw $9, 4($10)</span><div class="solution">100011 01010 01001 0000000000000100</div></div>
-          <div class="callout good" style="margin-top:10px"><b>J-type jump</b><br><span class="mono">j 64</span><div class="solution">000010 00000000000000000001000000</div></div>
+          <div class="callout good" style="margin-top:12px"><b>R-type intention</b> · opcode 0 · funct 32<br>“Add register 28 to register 2 and store in register 14.”<div class="solution">add $14, $28, $2<br>000000 11100 00010 01110 00000 100000</div></div>
+          <div class="callout good" style="margin-top:10px"><b>I-type load (LW)</b> · opcode 35<br><span class="mono">lw $9, 4($10)</span><div class="solution">100011 01010 01001 0000000000000100</div></div>
+          <div class="callout good" style="margin-top:10px"><b>I-type store (SW)</b> · opcode 43 (backup)<br><span class="mono">sw $9, 4($10)</span><div class="solution">101011 01010 01001 0000000000000100</div></div>
+          <div class="callout good" style="margin-top:10px"><b>I-type branch (BEQ)</b> · opcode 4 (backup)<br><span class="mono">beq $4, $5, 12</span><div class="solution">000100 00100 00101 0000000000001100</div></div>
+          <div class="callout good" style="margin-top:10px"><b>J-type jump (J)</b> · opcode 2<br><span class="mono">j 64</span><div class="solution">000010 00000000000000000001000000</div></div>
         </div>
       </div>
     </section>
@@ -358,9 +360,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
                 <select id="topicSelect" class="select" aria-label="Practice topic">
                   <option value="smart">Smart Mix · recommended</option>
                   <option value="assembly">Intention → Assembly</option>
-                  <option value="rencode">R-type → Binary</option>
+                  <option value="rencode">R-type → Binary (add/sub)</option>
                   <option value="iencode">ADDI → Binary</option>
                   <option value="lw">LW → Binary</option>
+                  <option value="sw">SW → Binary (backup)</option>
+                  <option value="beq">BEQ → Binary (backup)</option>
                   <option value="jencode">J-type → Binary</option>
                   <option value="expression">Two-step expression</option>
                 </select>
@@ -384,16 +388,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
         <div class="card">
           <div class="code-toolbar"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="R">R-type</button><button class="filter-btn" data-filter="I">I-type</button><button class="filter-btn" data-filter="J">J-type</button></div>
           <div class="table-wrap">
-            <table id="codeTable"><thead><tr><th>Instruction</th><th>Type</th><th>Opcode (6)</th><th>Funct (6)</th><th>Assembly pattern</th><th>What matters</th></tr></thead><tbody>
-              <tr data-type="R"><td><b>add</b> <span class="chip class">class material</span></td><td>R</td><td class="code">000000</td><td class="code">100000</td><td class="mono">add rd, rs, rt</td><td>shamt = 00000</td></tr>
-              <tr data-type="R"><td><b>sub</b> <span class="chip class">class material</span></td><td>R</td><td class="code">000000</td><td class="code">100010</td><td class="mono">sub rd, rs, rt</td><td>shamt = 00000</td></tr>
-              <tr data-type="R"><td><b>and</b> <span class="chip class">class material</span></td><td>R</td><td class="code">000000</td><td class="code">100100</td><td class="mono">and rd, rs, rt</td><td>shamt = 00000</td></tr>
-              <tr data-type="I"><td><b>addi</b> <span class="chip class">class material</span></td><td>I</td><td class="code">001000</td><td>—</td><td class="mono">addi rt, rs, imm</td><td>16-bit immediate</td></tr>
-              <tr data-type="I"><td><b>lw</b> <span class="chip class">class material</span></td><td>I</td><td class="code">100011</td><td>—</td><td class="mono">lw rt, offset(rs)</td><td>rs = base, rt = destination</td></tr>
-              <tr data-type="J"><td><b>j</b> <span class="chip class">class material</span></td><td>J</td><td class="code">000010</td><td>—</td><td class="mono">j address</td><td>26-bit address</td></tr>
-              <tr data-type="I"><td><b>sw</b> <span class="chip">quiz classification</span></td><td>I</td><td>not listed in supplied slides</td><td>—</td><td class="mono">sw rt, offset(rs)</td><td>Quiz identifies SW as I-type</td></tr>
-              <tr data-type="I"><td><b>beq</b> <span class="chip">quiz classification</span></td><td>I</td><td>not listed in supplied slides</td><td>—</td><td class="mono">beq rs, rt, offset</td><td>Quiz identifies BEQ as I-type</td></tr>
-              <tr data-type="J"><td><b>jal</b> <span class="chip">quiz classification</span></td><td>J</td><td>not listed in supplied slides</td><td>—</td><td class="mono">jal address</td><td>Quiz identifies JAL as J-type</td></tr>
+            <table id="codeTable"><thead><tr><th>Instruction</th><th>Type</th><th>Opcode (Dec)</th><th>Opcode (6)</th><th>Funct (Dec)</th><th>Funct (6)</th><th>Assembly pattern</th><th>What matters</th></tr></thead><tbody>
+              <tr data-type="R"><td><b>add</b> <span class="chip class">class material</span></td><td>R</td><td class="code">0</td><td class="code">000000</td><td class="code">32</td><td class="code">100000</td><td class="mono">add rd, rs, rt</td><td>shamt = 00000</td></tr>
+              <tr data-type="R"><td><b>sub</b> <span class="chip class">class material</span></td><td>R</td><td class="code">0</td><td class="code">000000</td><td class="code">34</td><td class="code">100010</td><td class="mono">sub rd, rs, rt</td><td>shamt = 00000</td></tr>
+              <tr data-type="R"><td><b>and</b> <span class="chip class">class material</span></td><td>R</td><td class="code">0</td><td class="code">000000</td><td class="code">36</td><td class="code">100100</td><td class="mono">and rd, rs, rt</td><td>shamt = 00000</td></tr>
+              <tr data-type="I"><td><b>addi</b> <span class="chip class">class material</span></td><td>I</td><td class="code">8</td><td class="code">001000</td><td>—</td><td>—</td><td class="mono">addi rt, rs, imm</td><td>16-bit immediate</td></tr>
+              <tr data-type="I"><td><b>lw</b> <span class="chip class">class material</span></td><td>I</td><td class="code">35</td><td class="code">100011</td><td>—</td><td>—</td><td class="mono">lw rt, offset(rs)</td><td>rs = base, rt = destination</td></tr>
+              <tr data-type="I"><td><b>sw</b> <span class="chip">backup</span></td><td>I</td><td class="code">43</td><td class="code">101011</td><td>—</td><td>—</td><td class="mono">sw rt, offset(rs)</td><td>rs = base, rt = source memory store</td></tr>
+              <tr data-type="I"><td><b>beq</b> <span class="chip">backup</span></td><td>I</td><td class="code">4</td><td class="code">000100</td><td>—</td><td>—</td><td class="mono">beq rs, rt, offset</td><td>branch if rs == rt (16-bit offset)</td></tr>
+              <tr data-type="J"><td><b>j</b> <span class="chip class">class material</span></td><td>J</td><td class="code">2</td><td class="code">000010</td><td>—</td><td>—</td><td class="mono">j address</td><td>26-bit address</td></tr>
+              <tr data-type="J"><td><b>jal</b> <span class="chip">quiz classification</span></td><td>J</td><td class="code">3</td><td class="code">000011</td><td>—</td><td>—</td><td class="mono">jal address</td><td>Jump and link ($ra = PC+4)</td></tr>
             </tbody></table>
           </div>
         </div>
@@ -457,8 +461,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   window.__mipsMasteryInteractiveInit=true;
 
   const STORAGE='mipsMasteryLab_v1';
-  const topics=['assembly','rencode','iencode','lw','jencode','expression'];
-  const topicNames={assembly:'Intention → Assembly',rencode:'R-type → Binary',iencode:'ADDI → Binary',lw:'LW → Binary',jencode:'J-type → Binary',expression:'Two-step expression'};
+  const topics=['assembly','rencode','iencode','lw','sw','beq','jencode','expression'];
+  const coreTopics=['assembly','rencode','iencode','lw','jencode','expression'];
+  const topicNames={assembly:'Intention → Assembly',rencode:'R-type → Binary',iencode:'ADDI → Binary',lw:'LW → Binary',sw:'SW → Binary (Backup)',beq:'BEQ → Binary (Backup)',jencode:'J-type → Binary',expression:'Two-step expression'};
   const blankStats=()=>Object.fromEntries(topics.map(t=>[t,{attempts:0,correct:0}]));
   const todayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
   let state={attempts:0,correct:0,streak:0,bestStreak:0,topics:blankStats(),current:null,xp:0,daily:{date:todayKey(),attempts:0,correct:0},updatedAt:0};
@@ -626,21 +631,27 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   $$('.nav-btn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
   $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.jump)));
 
-  function topicAccuracy(t){const s=state.topics[t];return s.attempts?s.correct/s.attempts:null}
+  function topicAccuracy(t){const s=state.topics[t];return (s&&s.attempts)?s.correct/s.attempts:null}
   function weakestTopic(){
-    const unseen=topics.filter(t=>state.topics[t].attempts===0);
+    const unseen=coreTopics.filter(t=>(!state.topics[t]||state.topics[t].attempts===0));
     if(unseen.length)return unseen[rint(0,unseen.length-1)];
-    return topics.slice().sort((a,b)=>topicAccuracy(a)-topicAccuracy(b))[0];
+    return coreTopics.slice().sort((a,b)=>topicAccuracy(a)-topicAccuracy(b))[0];
   }
   function chooseSmart(){
+    // 90% core quiz topics, ~10% backup SW/BEQ
+    if(Math.random()<0.10){
+      return Math.random()<0.5?'sw':'beq';
+    }
     const w=weakestTopic();
     if(Math.random()<.62)return w;
-    return topics[rint(0,topics.length-1)];
+    return coreTopics[rint(0,coreTopics.length-1)];
   }
 
   function record(topic,ok){
     if(state.daily.date!==todayKey())state.daily={date:todayKey(),attempts:0,correct:0};
-    state.attempts++;state.daily.attempts++;state.topics[topic].attempts++;
+    state.attempts++;state.daily.attempts++;
+    if(!state.topics[topic])state.topics[topic]={attempts:0,correct:0};
+    state.topics[topic].attempts++;
     if(ok){state.correct++;state.daily.correct++;state.topics[topic].correct++;state.streak++;state.bestStreak=Math.max(state.bestStreak,state.streak);state.xp+=35;confetti();}
     else{state.streak=0;state.xp+=10}
     save();
@@ -649,7 +660,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   function makeProblem(topic){
     if(topic==='smart')topic=chooseSmart();
     if(topic==='assembly'){
-      const kind=['add','sub','addi','lw'][rint(0,3)];
+      const isBackup = Math.random() < 0.12;
+      const kind = isBackup ? (Math.random() < 0.5 ? 'sw' : 'beq') : ['add','sub','addi','lw'][rint(0,3)];
       if(kind==='add'||kind==='sub'){
         const rd=rint(2,30),rs=rint(2,30),rt=rint(2,30);
         const prompt=kind==='add'?`Add register ${rs} to register ${rt} and store the result in register ${rd}.`:`Subtract register ${rt} from register ${rs} and store the result in register ${rd}.`;
@@ -659,24 +671,40 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
         const rt=rint(2,30),rs=rint(2,30),v=[5,10,20,100,255,1001][rint(0,5)];
         return {topic,type:'text',title:'Intention → Assembly',prompt:`Add immediate ${v} to register ${rs} and store the result in register ${rt}.`,answer:`addi $${rt}, $${rs}, ${v}`,hint:`ADDI assembly is addi rt, rs, immediate.`,explain:`ADDI puts the destination rt first, then source rs, then the immediate.`};
       }
-      const rs=rint(2,30),rt=rint(2,30),off=[0,4,8,12,16][rint(0,4)];
-      return {topic,type:'text',title:'Intention → Assembly',prompt:`Load a word into register ${rt} using register ${rs} as the base address with offset ${off}.`,answer:`lw $${rt}, ${off}($${rs})`,hint:`LW is lw rt, offset(rs). The base register goes inside parentheses.`,explain:`The destination is rt=$${rt}; the base is rs=$${rs}; offset=${off}.`};
+      if(kind==='lw'){
+        const rs=rint(2,30),rt=rint(2,30),off=[0,4,8,12,16][rint(0,4)];
+        return {topic,type:'text',title:'Intention → Assembly',prompt:`Load a word into register ${rt} using register ${rs} as the base address with offset ${off}.`,answer:`lw $${rt}, ${off}($${rs})`,hint:`LW is lw rt, offset(rs). The base register goes inside parentheses. Decimal opcode is 35.`,explain:`The destination is rt=$${rt}; the base is rs=$${rs}; offset=${off}. Decimal opcode=35 (100011).`};
+      }
+      if(kind==='sw'){
+        const rs=rint(2,30),rt=rint(2,30),off=[0,4,8,12,16][rint(0,4)];
+        return {topic,type:'text',title:'Intention → Assembly (Backup)',prompt:`Store the word in register ${rt} into memory using register ${rs} as the base address with offset ${off}.`,answer:`sw $${rt}, ${off}($${rs})`,hint:`SW is sw rt, offset(rs). Base address goes inside parentheses. Decimal opcode is 43.`,explain:`The source register to store is rt=$${rt}; base is rs=$${rs}; offset=${off}. Decimal opcode=43 (101011).`};
+      }
+      const rs=rint(2,30),rt=rint(2,30),off=[4,8,12,16,24,32][rint(0,5)];
+      return {topic,type:'text',title:'Intention → Assembly (Backup)',prompt:`Compare register ${rs} and register ${rt}. If they are equal, branch with an offset of ${off}.`,answer:`beq $${rs}, $${rt}, ${off}`,hint:`BEQ is beq rs, rt, offset. Decimal opcode is 4.`,explain:`BEQ compares rs=$${rs} and rt=$${rt} and branches by offset ${off}. Decimal opcode=4 (000100).`};
     }
     if(topic==='rencode'){
-      const op=Math.random()<.58?'add':'sub',rd=rint(1,30),rs=rint(1,30),rt=rint(1,30),funct=op==='add'?'100000':'100010';
-      return {topic,type:'fieldsR',title:'R-type → 32-bit Binary',prompt:`Encode: ${op} $${rd}, $${rs}, $${rt}`,fields:['000000',reg(rs),reg(rt),reg(rd),'00000',funct],names:['opcode','rs','rt','rd','shamt','funct'],hint:`First map roles: rd=$${rd}, rs=$${rs}, rt=$${rt}. Then fill binary field order.`,explain:`rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, rd=$${rd}→${reg(rd)}. ${op.toUpperCase()} funct=${funct}.`};
+      const op=Math.random()<.58?'add':'sub',rd=rint(1,30),rs=rint(1,30),rt=rint(1,30),funct=op==='add'?'100000':'100010',functDec=op==='add'?32:34;
+      return {topic,type:'fieldsR',title:'R-type → 32-bit Binary',prompt:`Encode: ${op} $${rd}, $${rs}, $${rt}`,fields:['000000',reg(rs),reg(rt),reg(rd),'00000',funct],names:['opcode (0)',`rs ($${rs})`,`rt ($${rt})`,`rd ($${rd})`,'shamt (0)',`funct (${functDec})`],hint:`R-type opcode is decimal 0 (000000). ${op.toUpperCase()} funct is decimal ${functDec} (${funct}). Field order: opcode | rs | rt | rd | shamt | funct.`,explain:`Opcode=0 (000000), rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, rd=$${rd}→${reg(rd)}, shamt=00000, funct=${functDec} (${funct}).`};
     }
     if(topic==='iencode'){
       const rs=rint(1,30),rt=rint(1,30),v=[5,10,20,63,100,255,511,1001][rint(0,7)];
-      return {topic,type:'fieldsI',title:'ADDI → 32-bit Binary',prompt:`Encode: addi $${rt}, $${rs}, ${v}`,fields:['001000',reg(rs),reg(rt),imm(v)],names:['opcode','rs','rt','immediate'],hint:`ADDI field order is opcode | rs | rt | immediate. Convert ${v} to 16 bits.`,explain:`ADDI opcode=001000. rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, ${v}→${imm(v)}.`};
+      return {topic,type:'fieldsI',title:'ADDI → 32-bit Binary',prompt:`Encode: addi $${rt}, $${rs}, ${v}`,fields:['001000',reg(rs),reg(rt),imm(v)],names:['opcode (8)',`rs ($${rs})`,`rt ($${rt})`,'immediate (16)'],hint:`ADDI decimal opcode is 8 → 001000. Field order: opcode (8) | rs | rt | immediate.`,explain:`ADDI decimal opcode=8 (001000). rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, imm=${v}→${imm(v)}.`};
     }
     if(topic==='lw'){
       const rs=rint(1,30),rt=rint(1,30),off=[0,4,8,12,16,20,24,28][rint(0,7)];
-      return {topic,type:'fieldsI',title:'LW → 32-bit Binary',prompt:`Encode: lw $${rt}, ${off}($${rs})`,fields:['100011',reg(rs),reg(rt),imm(off)],names:['opcode','rs · base','rt · destination','immediate'],hint:`The register inside parentheses is rs. The first register is rt.`,explain:`LW is lw rt, offset(rs). rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, offset ${off}→${imm(off)}.`};
+      return {topic,type:'fieldsI',title:'LW → 32-bit Binary',prompt:`Encode: lw $${rt}, ${off}($${rs})`,fields:['100011',reg(rs),reg(rt),imm(off)],names:['opcode (35)',`rs · base ($${rs})`,`rt · dest ($${rt})`,'offset (16)'],hint:`LW decimal opcode is 35 → 100011. Base register in parentheses is rs ($${rs}), destination is rt ($${rt}).`,explain:`LW decimal opcode=35 (100011). rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, offset=${off}→${imm(off)}.`};
+    }
+    if(topic==='sw'){
+      const rs=rint(1,30),rt=rint(1,30),off=[0,4,8,12,16,20,24,28][rint(0,7)];
+      return {topic,type:'fieldsI',title:'SW → 32-bit Binary (Backup)',prompt:`Encode: sw $${rt}, ${off}($${rs})`,fields:['101011',reg(rs),reg(rt),imm(off)],names:['opcode (43)',`rs · base ($${rs})`,`rt · src ($${rt})`,'offset (16)'],hint:`SW decimal opcode is 43 → 101011. Base in parentheses is rs ($${rs}), source register to store is rt ($${rt}).`,explain:`SW decimal opcode=43 (101011). rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, offset=${off}→${imm(off)}.`};
+    }
+    if(topic==='beq'){
+      const rs=rint(1,30),rt=rint(1,30),off=[4,8,12,16,20,24,28,40][rint(0,7)];
+      return {topic,type:'fieldsI',title:'BEQ → 32-bit Binary (Backup)',prompt:`Encode: beq $${rs}, $${rt}, ${off}`,fields:['000100',reg(rs),reg(rt),imm(off)],names:['opcode (4)',`rs · first ($${rs})`,`rt · second ($${rt})`,'offset (16)'],hint:`BEQ decimal opcode is 4 → 000100. First register is rs ($${rs}), second register is rt ($${rt}).`,explain:`BEQ decimal opcode=4 (000100). rs=$${rs}→${reg(rs)}, rt=$${rt}→${reg(rt)}, offset=${off}→${imm(off)}.`};
     }
     if(topic==='jencode'){
       const addr=[64,128,256,512,1000,1024,2048,4096][rint(0,7)];
-      return {topic,type:'fieldsJ',title:'J-type → 32-bit Binary',prompt:`Encode: j ${addr}`,fields:['000010',bin(addr,26)],names:['opcode','address'],hint:`J-type has only opcode and a 26-bit address field.`,explain:`J uses opcode 000010 in your class material. ${addr}→${bin(addr,26)} as 26 bits.`};
+      return {topic,type:'fieldsJ',title:'J-type → 32-bit Binary',prompt:`Encode: j ${addr}`,fields:['000010',bin(addr,26)],names:['opcode (2)','address (26)'],hint:`J decimal opcode is 2 → 000010. Address field is 26 bits.`,explain:`J decimal opcode=2 (000010). Address ${addr}→${bin(addr,26)} as 26 bits.`};
     }
     const a=rint(2,14),b=rint(15,22),c=rint(1,10),d=rint(23,30);
     return {topic,type:'textmulti',title:'Two-step expression',prompt:`a is in $${a}, b is in $${b}, c is in $${c}. Calculate (a + b) - c and store the final result in $${d}. Write the two assembly instructions.`,answer:`add $${d}, $${a}, $${b}\nsub $${d}, $${d}, $${c}`,hint:`Use the final destination as a temporary: store a+b there first, then subtract c.`,explain:`First add a+b into $${d}. Then use that result as rs for the subtraction.`};
@@ -783,10 +811,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   const achievements=[
     {id:'first',icon:'1',name:'First Byte',desc:'Complete 1 attempt',on:()=>state.attempts>=1},
     {id:'streak',icon:'⚡',name:'Five Alive',desc:'Reach a 5-answer streak',on:()=>state.bestStreak>=5},
-    {id:'r',icon:'R',name:'R-type Ready',desc:'Get 5 R-type encodes correct',on:()=>state.topics.rencode.correct>=5},
-    {id:'lw',icon:'↧',name:'Memory Mapper',desc:'Get 5 LW encodes correct',on:()=>state.topics.lw.correct>=5},
-    {id:'j',icon:'J',name:'Jump Start',desc:'Get 3 J-type encodes correct',on:()=>state.topics.jencode.correct>=3},
-    {id:'all',icon:'★',name:'Full Circuit',desc:'Attempt every topic',on:()=>topics.every(t=>state.topics[t].attempts>=1)}
+    {id:'r',icon:'R',name:'R-type Ready',desc:'Get 5 R-type encodes correct',on:()=>state.topics.rencode&&state.topics.rencode.correct>=5},
+    {id:'lw',icon:'↧',name:'Memory Mapper',desc:'Get 5 LW encodes correct',on:()=>state.topics.lw&&state.topics.lw.correct>=5},
+    {id:'sw',icon:'⇪',name:'Store Sentinel',desc:'Get 3 SW encodes correct (backup)',on:()=>state.topics.sw&&state.topics.sw.correct>=3},
+    {id:'beq',icon:'⌥',name:'Branch Boss',desc:'Get 3 BEQ encodes correct (backup)',on:()=>state.topics.beq&&state.topics.beq.correct>=3},
+    {id:'j',icon:'J',name:'Jump Start',desc:'Get 3 J-type encodes correct',on:()=>state.topics.jencode&&state.topics.jencode.correct>=3},
+    {id:'all',icon:'★',name:'Full Circuit',desc:'Attempt all core topics',on:()=>coreTopics.every(t=>state.topics[t]&&state.topics[t].attempts>=1)}
   ];
 
   function renderStats(){
@@ -799,9 +829,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     $('#dailyCount').textContent=`${daily}/10`;$('#dailyFill').style.width=dailyPct+'%';$('#practiceDaily').textContent=`${daily}/10`;$('#practiceDailyFill').style.width=dailyPct+'%';
     $('#dailyMsg').textContent=daily>=10?'Daily mission complete. Anything else is bonus mastery.':daily>=5?'Halfway there — your pattern recognition is warming up.':'Warm up with a few clean reps and let Smart Mix adapt.';
     $('#pCorrect').textContent=state.correct;$('#pBest').textContent=state.bestStreak;$('#pXP').textContent=state.xp;
-    const weak=weakestTopic(),ws=state.topics[weak],wa=ws.attempts?Math.round(ws.correct/ws.attempts*100):0;
+    const weak=weakestTopic(),ws=state.topics[weak]||{attempts:0,correct:0},wa=ws.attempts?Math.round(ws.correct/ws.attempts*100):0;
     $('#weakTopic').textContent=ws.attempts?topicNames[weak]:topicNames[weak]+' · unseen';$('#weakDetail').textContent=ws.attempts?`${ws.correct}/${ws.attempts} correct · Smart Mix will favor this.`:'Smart Mix will introduce this topic soon.';$('#weakFill').style.width=(ws.attempts?wa:8)+'%';
-    $('#topicStats').innerHTML=topics.map(t=>{const s=state.topics[t],a=s.attempts?Math.round(s.correct/s.attempts*100):0;return `<div class="mastery-row"><b>${topicNames[t]}</b><div class="mastery-bar"><i style="width:${a}%"></i></div><small>${s.correct}/${s.attempts} · ${a}%</small></div>`}).join('');
+    $('#topicStats').innerHTML=topics.map(t=>{const s=state.topics[t]||{attempts:0,correct:0},a=s.attempts?Math.round(s.correct/s.attempts*100):0;return `<div class="mastery-row"><b>${topicNames[t]}</b><div class="mastery-bar"><i style="width:${a}%"></i></div><small>${s.correct}/${s.attempts} · ${a}%</small></div>`}).join('');
     $('#achievements').innerHTML=achievements.map(a=>`<div class="achievement ${a.on()?'unlocked':''}"><div class="achievement-icon">${a.icon}</div><div><b>${a.name}</b><small>${a.desc}</small></div></div>`).join('');
   }
 
